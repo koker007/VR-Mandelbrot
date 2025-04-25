@@ -9,6 +9,7 @@ Shader "Explorer/Mandelbrot3D"
         _PosZ("PosZ", Range(-2, 2)) = 0
         _EyeAngle("EyeAngle", Range(40, 100)) = 90
         _EyeIndex("EyeIndex", Range(0, 1)) = 0
+        _FillingPercent("FillingPercent", Range(0.01, 1.0)) = 0.11
     }
         SubShader
     {
@@ -92,24 +93,42 @@ Shader "Explorer/Mandelbrot3D"
 
                 float3 posNow = posStart + rayVector * rayStep;
                 int iterMach = 0;
+                float mandel = 0.0f;
 
-                for (; iterMach < iterMachMax; iterMach++) {
+                bool firstInside = true;
+                for (; iterMach < iterMachMax; iterMach++) 
+                {
                     //Проверяем бульбу на попадание луча
-                    float mandel = MandelBulb(posNow.x, posNow.y, posNow.z, iterMandelMax);
+                    mandel = MandelBulb(posNow.x, posNow.y, posNow.z, iterMandelMax);
                     
-                    if (mandel > 0.99f)
+                    //попадание
+                    if (mandel > 0.50f && !firstInside)
+                    {
                         break;
+                    }
+
 
                     rayStep = rayStep * 1.01f;
                     rayStepAll += rayStep;
-                    posNow = posNow + rayVector * rayStep;
+                    posNow += rayVector * rayStep;
+
+                    if(iterMach > 50)
+                        firstInside = false;
+                }
+
+                if (iterMach < iterMachMax) 
+                {
+                    // Раскраска на основе normalizedIter (mandel)
+                    float hue = 0 + mandel * 1.0f; // Преобразуем в угол для цветового круга
+                    float3 color = float3(sin(hue) * posNow.x, cos(hue + posNow.y), 1.0 - sin(hue + posNow.z)); // RGB-цвет
+                    result = clamp(color, 0.0f, 1.0f); // Ограничиваем значения от 0 до 1
                 }
 
                 float iterFloat = iterMach;
 
                 float coofIter = 1.0f - (iterFloat / iterMachMax);
 
-                result = float3(coofIter, coofIter, coofIter);
+                result *= coofIter;  //float3(coofIter, coofIter, coofIter);
 
                 return result;
             }
@@ -149,6 +168,7 @@ Shader "Explorer/Mandelbrot3D"
             float _StartStep;
             float _EyeAngle;
             float _EyeIndex;
+            float _FillingPercent;
             float4 _CamPos;
             uniform float4x4 _RotationMatrix;
 
@@ -170,7 +190,7 @@ Shader "Explorer/Mandelbrot3D"
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i); //Insert
 
                 //random Quit
-                if (random(i.uv) > 0.11f) {
+                if (random(i.uv) > _FillingPercent) {
                     return fixed4(0.0f, 0.0f, 0.0f, 1.0);
                 }
                 

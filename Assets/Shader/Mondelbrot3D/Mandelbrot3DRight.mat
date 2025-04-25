@@ -110,7 +110,8 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _EyeAngle: 92
-    - _EyeIndex: 0.78
+    - _EyeIndex: 0.447
+    - _FillingPercent: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
