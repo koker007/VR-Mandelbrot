@@ -20,19 +20,19 @@ public class MandelbulbCTRL : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         UpdateData();
     }
 
-    void UpdateData() {
-        //SetEyes();
+    private void UpdateData() {
+        SetEyes();
         SetRotate();
         SetPositon();
 

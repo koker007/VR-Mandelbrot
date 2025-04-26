@@ -5,11 +5,18 @@ Shader "Explorer/Mandelbrot3D"
         _MaxIterMandel("Iteration Mandel Max", Int) = 100
         _MaxIterMarch("Iteration March Max", Int) = 40
         _CamPos("Camera Position", Vector) = (0, 0, 0, 0)
-        _StartStep("Start Ray Step", Range(0.0000001, 0.001)) = 0.001
+        _StartStep("Start Ray Step", Range(0.0001, 0.01)) = 0.001
         _PosZ("PosZ", Range(-2, 2)) = 0
         _EyeAngle("EyeAngle", Range(40, 100)) = 90
         _EyeIndex("EyeIndex", Range(0, 1)) = 0
         _FillingPercent("FillingPercent", Range(0.01, 1.0)) = 0.11
+        _Yaw("Yaw", Range(-180, 180)) = 0
+        _Pitch("Pitch", Range(-90, 90)) = 0
+        _LightNormalOffset("LightNormalOffset", Range(0.1, 0.01)) = 0.1
+
+        _LightDir("Light Direction", Vector) = (1, 1, 1, 0)
+        _LightIntensity("Light Intensity", Range(0.1, 2.0)) = 1.0
+        _AmbientLight("Ambient Light", Range(0.0, 0.5)) = 0.1
     }
         SubShader
     {
@@ -85,7 +92,17 @@ Shader "Explorer/Mandelbrot3D"
                 return frac(sin(dot(uv,float2(12.9898, 78.233))) * 43758.5453123);
             }
 
-            float3 RayMarching(float3 posStart, float rayStepStart, float3 rayVector, int iterMachMax, int iterMandelMax) {
+            float3 ComputeNormal(float3 p, float epsilon, int iterMax) {
+                float dx = (MandelBulb(p.x + epsilon, p.y, p.z, iterMax) - 
+                           MandelBulb(p.x - epsilon, p.y, p.z, iterMax)) / (2.0 * epsilon);
+                float dy = (MandelBulb(p.x, p.y + epsilon, p.z, iterMax) - 
+                           MandelBulb(p.x, p.y - epsilon, p.z, iterMax)) / (2.0 * epsilon);
+                float dz = (MandelBulb(p.x, p.y, p.z + epsilon, iterMax) - 
+                           MandelBulb(p.x, p.y, p.z - epsilon, iterMax)) / (2.0 * epsilon);
+                return normalize(float3(dx, dy, dz));
+            }
+
+            float3 RayMarching(float3 posStart, float rayStepStart, float3 rayVector, int iterMachMax, int iterMandelMax, float lightNormalOffset, float3 lightDir, float lightIntensity, float ambientLight) {
                 float3 result = float3(0.0f,0.0f,0.0f);
 
                 float rayStep = rayStepStart;
@@ -108,7 +125,7 @@ Shader "Explorer/Mandelbrot3D"
                     }
 
 
-                    rayStep = rayStep * 1.01f;
+                    rayStep = rayStep * 1.009f;
                     rayStepAll += rayStep;
                     posNow += rayVector * rayStep;
 
@@ -122,6 +139,12 @@ Shader "Explorer/Mandelbrot3D"
                     float hue = 0 + mandel * 1.0f; // Преобразуем в угол для цветового круга
                     float3 color = float3(sin(hue) * posNow.x, cos(hue + posNow.y), 1.0 - sin(hue + posNow.z)); // RGB-цвет
                     result = clamp(color, 0.0f, 1.0f); // Ограничиваем значения от 0 до 1
+
+                    float3 normal = ComputeNormal(posNow, lightNormalOffset, iterMandelMax);
+                    float3 normalizedLightDir = normalize(lightDir);
+                    float diffuse = max(0.0f, dot(normal, normalizedLightDir));
+                    float3 lighting = color * (diffuse * lightIntensity + ambientLight);
+                    result = clamp(lighting, 0.0f, 1.0f);
                 }
 
                 float iterFloat = iterMach;
@@ -132,6 +155,25 @@ Shader "Explorer/Mandelbrot3D"
 
                 return result;
             }
+
+            float4x4 CreateRotationMatrix(float yaw, float pitch) {
+                float radYaw = radians(yaw);
+                float radPitch = radians(pitch);
+                float4x4 yawMatrix = float4x4(
+                    cos(radYaw), 0, sin(radYaw), 0,
+                    0, 1, 0, 0,
+                    -sin(radYaw), 0, cos(radYaw), 0,
+                    0, 0, 0, 1
+                );
+                float4x4 pitchMatrix = float4x4(
+                    1, 0, 0, 0,
+                    0, cos(radPitch), -sin(radPitch), 0,
+                    0, sin(radPitch), cos(radPitch), 0,
+                    0, 0, 0, 1
+                );
+                return mul(yawMatrix, pitchMatrix);
+            }
+
             float4 MultiplyMatrixVector(const float4x4 mat, const float4 vec)
             {
                 float4 result;
@@ -170,6 +212,13 @@ Shader "Explorer/Mandelbrot3D"
             float _EyeIndex;
             float _FillingPercent;
             float4 _CamPos;
+            float _Yaw;
+            float _Pitch;
+            float _LightNormalOffset;
+
+            float4 _LightDir;
+            float _LightIntensity;
+            float _AmbientLight;
             uniform float4x4 _RotationMatrix;
 
             v2f vert(appdata v)
@@ -221,11 +270,12 @@ Shader "Explorer/Mandelbrot3D"
                 //result = MandelBulb(_PosZ, UV.x, UV.y, _MaxIterMandel);
 
                 float4 vectorRay4 = float4(GetRayVector(i.uv, _EyeAngle), 1.0f);
-                float4 vectorRayResult = MultiplyMatrixVector(_RotationMatrix, vectorRay4); // Выполняем умножение матрицы
+                float4x4 rotationMatrix = CreateRotationMatrix(_Yaw, _Pitch);
+                float4 vectorRayResult = MultiplyMatrixVector(rotationMatrix, vectorRay4); // Выполняем умножение матрицы
 
                 float3 posStart = float3(_CamPos.x, _CamPos.y, _CamPos.z);
 
-                float3 colorResult = RayMarching(posStart, _StartStep, vectorRayResult.xyz, _MaxIterMarch, _MaxIterMandel);
+                float3 colorResult = RayMarching(posStart, _StartStep, vectorRayResult.xyz, _MaxIterMarch, _MaxIterMandel, _LightNormalOffset, _LightDir.xyz, _LightIntensity, _AmbientLight);
 
                 return fixed4(colorResult.r, colorResult.g, colorResult.b, 1.0);
             }
