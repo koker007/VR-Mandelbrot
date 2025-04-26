@@ -2481,10 +2481,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4792015e8d2a957419ca27bea812e989, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mandelPos: {x: 0, y: 0, z: 0}
-  eyesDist: 0.3
-  meshRendererLeft: {fileID: 0}
-  meshRendererRight: {fileID: 0}
+  _mainCamera: {fileID: 0}
+  _mandelPos: {x: 0, y: 0, z: 0}
+  _eyesDist: 0.3
+  _meshRendererLeft: {fileID: 0}
+  _meshRendererRight: {fileID: 0}
 --- !u!1 &1139826922600093792
 GameObject:
   m_ObjectHideFlags: 0
@@ -2887,10 +2888,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4792015e8d2a957419ca27bea812e989, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mandelPos: {x: 0, y: 0, z: 0}
-  eyesDist: 0.3
-  meshRendererLeft: {fileID: 0}
-  meshRendererRight: {fileID: 0}
+  _mainCamera: {fileID: 0}
+  _mandelPos: {x: 0, y: 0, z: 0}
+  _eyesDist: 0.3
+  _meshRendererLeft: {fileID: 0}
+  _meshRendererRight: {fileID: 0}
 --- !u!1001 &6539829488028003957
 PrefabInstance:
   m_ObjectHideFlags: 0

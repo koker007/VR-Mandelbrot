@@ -5,6 +5,11 @@ using UnityEngine;
 public class MandelbulbCTRL : MonoBehaviour
 {
     [SerializeField]
+    private float _playerSize = 1.0f;
+
+    [SerializeField]
+    private Camera _mainCamera;
+    [SerializeField]
     private Vector3 _mandelPos;
     [SerializeField]
     private float _eyesDist = 0.3f;
@@ -13,6 +18,8 @@ public class MandelbulbCTRL : MonoBehaviour
     private MeshRenderer _meshRendererLeft;
     [SerializeField]
     private MeshRenderer _meshRendererRight;
+
+    private Vector3 baceOffset = new Vector3();
 
     private void Awake()
     {
@@ -32,10 +39,17 @@ public class MandelbulbCTRL : MonoBehaviour
     }
 
     private void UpdateData() {
+        UpdateOffset();
+
         SetEyes();
         SetRotate();
         SetPositon();
 
+        void UpdateOffset() 
+        {
+            if (baceOffset == Vector3.zero && _mainCamera.transform.localPosition != Vector3.zero)
+                baceOffset = _mainCamera.transform.localPosition;
+        }
         void SetEyes() {
             _meshRendererLeft?.material.SetFloat("_EyeIndex", 0.1f);
             _meshRendererRight?.material.SetFloat("_EyeIndex", 0.9f);
@@ -47,17 +61,50 @@ public class MandelbulbCTRL : MonoBehaviour
             //quaternion.eulerAngles = RotMod;
 
             //Matrix4x4 rotationMatrix = Matrix4x4.TRS(Vector3.zero, quaternion, Vector3.one);
-            Matrix4x4 rotationMatrix = Matrix4x4.TRS(Vector3.zero, transform.rotation, Vector3.one);
+            Matrix4x4 rotationMatrix = CreateRotationMatrix(_mainCamera.transform.rotation);//Matrix4x4.TRS(Vector3.zero, _mainCamera.transform.localRotation, Vector3.one);
             _meshRendererLeft?.material.SetMatrix("_RotationMatrix", rotationMatrix);
             _meshRendererRight?.material.SetMatrix("_RotationMatrix", rotationMatrix);
         }
         void SetPositon() {
-            float eyeDistHalf = _eyesDist / 2;
-            Vector3 posL = _mandelPos - (transform.right * eyeDistHalf);
-            Vector3 posR = _mandelPos + (transform.right * eyeDistHalf);
+            float eyeDistHalf = _eyesDist / 2 * _playerSize;
+
+            Vector3 centerPos = _mandelPos + (_mainCamera.transform.localPosition - baceOffset) * _playerSize;
+
+            Vector3 posL = centerPos - (transform.right * eyeDistHalf);
+            Vector3 posR = centerPos + (transform.right * eyeDistHalf);
 
             _meshRendererLeft?.material.SetVector("_CamPos", new Vector4(posL.x, posL.y, posL.z, 0.0f));
             _meshRendererRight?.material.SetVector("_CamPos", new Vector4(posR.x, posR.y, posR.z, 0.0f));
         }
+    }
+
+    Matrix4x4 CreateRotationMatrix(Quaternion quaternion)
+    {
+        float radYaw = Mathf.Deg2Rad * -quaternion.eulerAngles.y;// yaw;
+        float radPitch = Mathf.Deg2Rad * -quaternion.eulerAngles.x; //pitch;
+        float radRoll = Mathf.Deg2Rad * -quaternion.eulerAngles.z;
+
+        Matrix4x4 yawMatrix = new Matrix4x4(
+            new Vector4(Mathf.Cos(radYaw), 0, Mathf.Sin(radYaw), 0),
+            new Vector4(0, 1, 0, 0),
+            new Vector4(-Mathf.Sin(radYaw), 0, Mathf.Cos(radYaw), 0),
+            new Vector4(0, 0, 0, 1)
+        );
+
+        Matrix4x4 pitchMatrix = new Matrix4x4(
+            new Vector4(1, 0, 0, 0),
+            new Vector4(0, Mathf.Cos(radPitch), -Mathf.Sin(radPitch), 0),
+            new Vector4(0, Mathf.Sin(radPitch), Mathf.Cos(radPitch), 0),
+            new Vector4(0, 0, 0, 1)
+        );
+
+        Matrix4x4 rollMatrix = new Matrix4x4(
+            new Vector4(Mathf.Cos(radRoll), -Mathf.Sin(radRoll), 0, 0),
+            new Vector4(Mathf.Sin(radRoll), Mathf.Cos(radRoll), 0, 0),
+            new Vector4(0, 0, 1, 0),
+            new Vector4(0, 0, 0, 1)
+        );
+
+        return yawMatrix * pitchMatrix * rollMatrix;
     }
 }

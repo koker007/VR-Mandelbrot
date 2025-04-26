@@ -10,8 +10,6 @@ Shader "Explorer/Mandelbrot3D"
         _EyeAngle("EyeAngle", Range(40, 100)) = 90
         _EyeIndex("EyeIndex", Range(0, 1)) = 0
         _FillingPercent("FillingPercent", Range(0.01, 1.0)) = 0.11
-        _Yaw("Yaw", Range(-180, 180)) = 0
-        _Pitch("Pitch", Range(-90, 90)) = 0
         _LightNormalOffset("LightNormalOffset", Range(0.1, 0.01)) = 0.1
 
         _LightDir("Light Direction", Vector) = (1, 1, 1, 0)
@@ -125,7 +123,7 @@ Shader "Explorer/Mandelbrot3D"
                     }
 
 
-                    rayStep = rayStep * 1.009f;
+                    rayStep = rayStep * 1.01f;
                     rayStepAll += rayStep;
                     posNow += rayVector * rayStep;
 
@@ -149,29 +147,11 @@ Shader "Explorer/Mandelbrot3D"
 
                 float iterFloat = iterMach;
 
-                float coofIter = 1.0f - (iterFloat / iterMachMax);
+                float coofIter = 1.2f - (iterFloat / iterMachMax);
 
                 result *= coofIter;  //float3(coofIter, coofIter, coofIter);
 
                 return result;
-            }
-
-            float4x4 CreateRotationMatrix(float yaw, float pitch) {
-                float radYaw = radians(yaw);
-                float radPitch = radians(pitch);
-                float4x4 yawMatrix = float4x4(
-                    cos(radYaw), 0, sin(radYaw), 0,
-                    0, 1, 0, 0,
-                    -sin(radYaw), 0, cos(radYaw), 0,
-                    0, 0, 0, 1
-                );
-                float4x4 pitchMatrix = float4x4(
-                    1, 0, 0, 0,
-                    0, cos(radPitch), -sin(radPitch), 0,
-                    0, sin(radPitch), cos(radPitch), 0,
-                    0, 0, 0, 1
-                );
-                return mul(yawMatrix, pitchMatrix);
             }
 
             float4 MultiplyMatrixVector(const float4x4 mat, const float4 vec)
@@ -270,8 +250,7 @@ Shader "Explorer/Mandelbrot3D"
                 //result = MandelBulb(_PosZ, UV.x, UV.y, _MaxIterMandel);
 
                 float4 vectorRay4 = float4(GetRayVector(i.uv, _EyeAngle), 1.0f);
-                float4x4 rotationMatrix = CreateRotationMatrix(_Yaw, _Pitch);
-                float4 vectorRayResult = MultiplyMatrixVector(rotationMatrix, vectorRay4); // Выполняем умножение матрицы
+                float4 vectorRayResult = MultiplyMatrixVector(_RotationMatrix, vectorRay4); // Выполняем умножение матрицы
 
                 float3 posStart = float3(_CamPos.x, _CamPos.y, _CamPos.z);
 

@@ -11990,10 +11990,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4792015e8d2a957419ca27bea812e989, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mandelPos: {x: 0, y: 0, z: 0}
-  eyesDist: 0.3
-  meshRendererLeft: {fileID: 0}
-  meshRendererRight: {fileID: 0}
+  _mandelPos: {x: 0, y: 0, z: 0}
+  _eyesDist: 0.3
+  _meshRendererLeft: {fileID: 0}
+  _meshRendererRight: {fileID: 0}
 --- !u!1 &1065981690
 GameObject:
   m_ObjectHideFlags: 0
@@ -18753,7 +18753,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 6e-45, z: 4.06e-42, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 5.6e-44, z: 0, w: 1.6114932e-38}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -19421,10 +19421,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4792015e8d2a957419ca27bea812e989, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mandelPos: {x: 0, y: 0, z: 0}
-  eyesDist: 0.3
-  meshRendererLeft: {fileID: 0}
-  meshRendererRight: {fileID: 0}
+  _mandelPos: {x: 0, y: 0, z: 0}
+  _eyesDist: 0.3
+  _meshRendererLeft: {fileID: 0}
+  _meshRendererRight: {fileID: 0}
 --- !u!64 &1848380350
 MeshCollider:
   m_ObjectHideFlags: 0
