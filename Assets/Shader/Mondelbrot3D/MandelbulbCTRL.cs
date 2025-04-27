@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using APP;
 
 public class MandelbulbCTRL : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class MandelbulbCTRL : MonoBehaviour
     private MeshRenderer _meshRendererRight;
 
     private Vector3 baceOffset = new Vector3();
+
+    public float PlayerSize => _playerSize;
+    public Vector3 MandelPos => _mandelPos;
 
     private void Awake()
     {
@@ -41,10 +45,19 @@ public class MandelbulbCTRL : MonoBehaviour
     private void UpdateData() {
         UpdateOffset();
 
+        SetOther();
+
         SetEyes();
         SetRotate();
         SetPositon();
 
+        void SetOther() 
+        {
+            var fillingPercent = GraphicSystem.Instance.FillingPercent;
+
+            _meshRendererLeft?.material.SetFloat("_FillingPercent", fillingPercent);
+            _meshRendererRight?.material.SetFloat("_FillingPercent", fillingPercent);
+        }
         void UpdateOffset() 
         {
             if (baceOffset == Vector3.zero && _mainCamera.transform.localPosition != Vector3.zero)
@@ -55,13 +68,7 @@ public class MandelbulbCTRL : MonoBehaviour
             _meshRendererRight?.material.SetFloat("_EyeIndex", 0.9f);
         }
         void SetRotate() {
-            //Vector3 RotOrigin = transform.rotation.eulerAngles;
-            //Vector3 RotMod = new Vector3(-RotOrigin.x, -RotOrigin.y, RotOrigin.z);
-            //Quaternion quaternion = new Quaternion();
-            //quaternion.eulerAngles = RotMod;
-
-            //Matrix4x4 rotationMatrix = Matrix4x4.TRS(Vector3.zero, quaternion, Vector3.one);
-            Matrix4x4 rotationMatrix = CreateRotationMatrix(_mainCamera.transform.rotation);//Matrix4x4.TRS(Vector3.zero, _mainCamera.transform.localRotation, Vector3.one);
+            Matrix4x4 rotationMatrix = CreateRotationMatrix(_mainCamera.transform.rotation);
             _meshRendererLeft?.material.SetMatrix("_RotationMatrix", rotationMatrix);
             _meshRendererRight?.material.SetMatrix("_RotationMatrix", rotationMatrix);
         }
@@ -106,5 +113,14 @@ public class MandelbulbCTRL : MonoBehaviour
         );
 
         return yawMatrix * pitchMatrix * rollMatrix;
+    }
+
+    public void SetMandelPos(Vector3 positionNew) 
+    {
+        _mandelPos = positionNew;
+    }
+    public void SetPlayerSize(float sizeNew) 
+    {
+        _playerSize = sizeNew;
     }
 }

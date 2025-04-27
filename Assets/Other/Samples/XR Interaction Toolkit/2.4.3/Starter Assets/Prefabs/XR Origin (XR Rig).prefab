@@ -1286,6 +1286,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5170260855053772931}
   - component: {fileID: 3302538021143715944}
+  - component: {fileID: 172000493759866407}
   m_Layer: 0
   m_Name: MandelBulbVisor
   m_TagString: Untagged
@@ -1322,11 +1323,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4792015e8d2a957419ca27bea812e989, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerSize: 1
   _mainCamera: {fileID: 1767192439}
   _mandelPos: {x: 0, y: 0, z: -2}
   _eyesDist: 0.03
   _meshRendererLeft: {fileID: 0}
   _meshRendererRight: {fileID: 3820939316934324939}
+--- !u!114 &172000493759866407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940475076254037867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feeaf837be8b384449507b96597d7d62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _mandelbulbCTRL: {fileID: 3302538021143715944}
+  _mainCamera: {fileID: 1767192439}
+  _moveSpeed: 0.2
 --- !u!1 &2190828208922718286
 GameObject:
   m_ObjectHideFlags: 0
